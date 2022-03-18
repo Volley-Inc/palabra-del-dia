@@ -1,0 +1,87 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: "{{production-helmrelease-name}}"
+  namespace: "{{production-namespace}}"
+spec:
+  releaseName: "{{production-helmrelease-name}}"
+  chart:
+    spec:
+      chart: gev
+      sourceRef:
+        kind: HelmRepository
+        name: volley-helm-charts
+        namespace: helm-repositories
+      version: "0.1.0"
+  interval: 1h0m0s
+  timeout: 15m
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    environment: production
+    glb:
+      image:
+        repository: 375633680607.dkr.ecr.us-east-1.amazonaws.com/gev-load-balancer-prod
+        tag: v1.0.100
+      serviceAccount:
+        annotations:
+          # IAM Role for GLB Service Account
+          eks.amazonaws.com/role-arn: "arn:aws:iam::375633680607:role/{{project}}-prod-glb"
+      ingress:
+        # DNS for GLB endpoint (Public)
+        hostName: "{{project}}.volley-services.net"
+        annotations:
+          # Create dedicated public Application Load Balancer by using a
+          # new group name
+          alb.ingress.kubernetes.io/group.name: {{project}}
+      env: # GLB environment variables
+        STAGE: prod
+        GEV_TARGET_HOST: "http://{{project}}-gev.volley-services.net"
+        SESSION_TABLE: "{{project}}-prod-glb"
+        GEV_SENTRY_KEY: ""
+        NODE_OPTIONS: "--max-old-space-size=1536" # MB
+        GLB_COOKIE_NAME: "HAPINGRESS"
+      resources:
+        limits:
+          cpu: 2000m
+          memory: 2Gi
+        requests:
+          cpu: 500m
+          memory: 512Mi
+    gev:
+      image:
+        repository: "375633680607.dkr.ecr.us-east-1.amazonaws.com/{{project}}"
+        tag: v0.0.1
+      serviceAccount:
+        annotations:
+          # IAM Role for GEV Service Account
+          eks.amazonaws.com/role-arn: "arn:aws:iam::375633680607:role/{{project}}-prod-gev"
+      ingress:
+        className: "{{project}}"
+        # DNS for GEV endpoint (Private)
+        hostName: "{{project}}-gev.volley-services.net"
+      env: # GEV environment variables
+        STAGE: prod
+        GEV_ID: "{{project}}"
+        NODE_OPTIONS: "--max-old-space-size=1536" # MB
+      resources:
+        limits:
+          cpu: 2000m
+          memory: 2Gi
+        requests:
+          cpu: 1000m
+          memory: 1Gi
+      autoscaling:
+        enabled: true
+        minReplicas: 2
+        maxReplicas: 10
+        targetCPUUtilizationPercentage: 50
+        targetMemoryUtilizationPercentage: 50
+      lifecycle:
+        # On a new deployment, we keep old Pod around to serve
+        # existing user sessions for 1hr.
+        preStopSleepSeconds: 3600

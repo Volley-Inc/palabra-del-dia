@@ -1,0 +1,6 @@
+{
+  "plugin": [
+    "dist/src/plugin/Flowscript/SkillFlowscriptPlugin.js"
+  ],
+  "path": "./assets/en/US/scripts"
+}

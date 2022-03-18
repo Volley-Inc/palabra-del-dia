@@ -1,0 +1,31 @@
+[Main]
+route Help   to hello.HelpDialog
+route Cancel to hello.StopSkill
+route Stop   to hello.StopSkill
+listen # Check for incoming routes, or capture the LaunchRequest
+
+if user.name then do
+  say "It's great to see you again ${:toUpper(user.name)}!"
+  exit
+go AskName
+
+[AskName]
+say "What is your name?"
+listen
+  Name => SetName
+say "Sorry, I didn't catch that."
+go => AskName
+
+[SetName]
+set user.name to intent.slots.name.value
+say "Nice to meet you ${user.name}."
+log "Added new user ${user.name}"
+exit
+
+[HelpDialog]
+say "We'll ask you your name and then say it back to you!"
+return
+
+[StopSkill]
+say "Thanks for trying our skill. See you soon!"
+exit

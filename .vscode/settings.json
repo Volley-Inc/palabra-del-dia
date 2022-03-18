@@ -1,0 +1,55 @@
+{
+  /**
+   * For Git, enable some convenience options to make the VS Code integration
+   * more straightforward.
+   */
+  "git.enableSmartCommit": true,
+  "git.autofetch": true,
+
+  /**
+   * Enable ligatures, and ESLint auto-fixing on save.
+   */
+  "editor.fontLigatures": true,
+  "editor.formatOnSave": false,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": true
+  },
+
+  /**
+   * When moving source files in TS/JS, automatically update their associated
+   * imports.
+   */
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "javascript.updateImportsOnFileMove.enabled": "always",
+
+  /**
+   * Use default tab-size 2 for every source type.
+   */
+  "editor.tabSize": 2,
+
+  /**
+   * Ensure lines are not longer than 80 in length - word wrap if it is. This
+   * enables multi-column source views even on smaller monitors.
+   */
+  "editor.wordWrap": "wordWrapColumn",
+  "editor.wordWrapColumn": 80,
+  "editor.rulers": [
+    80
+  ],
+  
+  /**
+   * Javascript is likely to be configuration files, and result in spurious
+   * suggestions.
+   */
+  "javascript.suggestionActions.enabled": false,
+
+  /**
+   * The debug console looks better with JSON structured with dark text rather
+   * than blue. However, this can't be used with a dark theme.
+   *
+   * Recommendation: Enable if using a light theme.
+   */
+   "workbench.colorCustomizations": {
+    // "debugConsole.infoForeground": "#000"
+  }
+}

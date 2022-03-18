@@ -1,0 +1,122 @@
+apiVersion: networking.k8s.io/v1
+kind: IngressClass
+metadata:
+  name: "{{project}}"
+  namespace: "{{production-namespace}}"
+  labels:
+    app.kubernetes.io/instance: production
+    app.kubernetes.io/name: "{{project}}-ha"
+spec:
+  controller: "haproxy-ingress.github.io/controller/{{project}}"
+
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: "{{project}}-ha"
+  namespace: "{{production-namespace}}"
+  labels:
+    app.kubernetes.io/instance: production
+    app.kubernetes.io/name: "{{project}}-ha"
+spec:
+  releaseName: "{{project}}-ha"
+  chart:
+    spec:
+      chart: haproxy-ingress
+      sourceRef:
+        kind: HelmRepository
+        name: haproxy-ingress
+        namespace: helm-repositories
+      version: "v0.13.0-beta.2"
+  interval: 1h0m0s
+  timeout: 15m
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  # Default values
+  # https://github.com/haproxy-ingress/charts/blob/0.13.0-beta.2/haproxy-ingress/values.yaml
+  values:
+    # Configuration: https://haproxy-ingress.github.io/v0.13/docs/configuration/
+    controller:
+      autoscaling:
+        enabled: true
+        minReplicas: 2
+        maxReplicas: 8
+        # Lower thresholds because
+        # 1. It takes ~5mins for NLB to register a new target.
+        # 2. Linearly scale total connections haproxy can handle
+        #    with traffic quickly, which is (max-connections * replicas)
+        targetCPUUtilizationPercentage: 40
+        targetMemoryUtilizationPercentage: 70
+      stats:
+        enabled: true
+      metrics:
+        enabled: true
+      serviceMonitor:
+        enabled: true
+        labels:
+          release: kube-prometheus-stack
+      extraArgs:
+        publish-service: "{{production-namespace}}/{{project}}-ha-haproxy-ingress"
+        update-status: true
+        controller-class: "{{project}}"
+      config:
+        timeout-client: "200s"        # "50s"
+        timeout-client-fin: "200s"    # "50s"
+        timeout-connect: "20s"        # "5s"
+        timeout-http-request: "20s"   # "5s"
+        timeout-keep-alive: "4m"      # "1m"
+        timeout-queue: "180s"         # "5s"
+        timeout-server: "200s"        # "50s"
+        timeout-server-fin: "200s"    #"50s"
+        drain-support: "true"
+        nbthread: "8"
+        max-connections: "4000"
+        ssl-options: no-tlsv11 no-tlsv10 no-sslv3 no-tls-tickets
+      service:
+        annotations:
+          service.beta.kubernetes.io/aws-load-balancer-type: "external"
+          service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "tcp"
+          service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+          service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: "ip"
+          service.beta.kubernetes.io/aws-load-balancer-scheme: "internal"
+          external-dns.alpha.kubernetes.io/hostname: "{{project}}-ha.volley-services.net"
+          service.beta.kubernetes.io/aws-load-balancer-healthcheck-protocol: HTTP
+          service.beta.kubernetes.io/aws-load-balancer-healthcheck-path: /healthz
+          service.beta.kubernetes.io/aws-load-balancer-healthcheck-port: "10253"
+      updateStrategy:
+        rollingUpdate:
+          maxSurge: 100%
+          maxUnavailable: 0%
+        type: RollingUpdate
+      # replicaCount: 3 # not required with autoscaling enabled with HPA
+      # Keep grace period in sync with lifecycle sleep and NLB's deregistration_delay.
+      terminationGracePeriodSeconds: 300
+      resources:
+        limits:
+          cpu: 1000m
+          memory: 256Mi
+        requests:
+          cpu: 500m
+          memory: 128Mi
+      # Generous liveness probe - becuause when load is high
+      # controller can be slow to respond to health checks
+      # and we dont want failed healthchekc to restart container
+      # just for that because it can interrupt in-flight
+      # requests/ exisiting connections.
+      livenessProbe:
+        failureThreshold: 3
+        initialDelaySeconds: 10
+        periodSeconds: 20
+        successThreshold: 1
+        timeoutSeconds: 5
+      # To not interrupt in-flight requests, configure this
+      # along with NLB's deregistration_delay, which defaults to
+      # 300s
+      lifecycle:
+        preStop:
+          exec:
+            command: ["/bin/sleep", "300"]

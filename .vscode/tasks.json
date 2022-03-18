@@ -1,0 +1,75 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Watch & Run Interceptor",
+      "dependsOn": ["interceptor-loop", "npm: local:watch"],
+      "problemMatcher": []
+    },
+    {
+      "label": "interceptor-loop",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "Alexa Skill Interceptor",
+        "Restart Interceptor"
+      ]
+    },
+    {
+      "label": "Alexa Skill Interceptor",
+      "detail": "intercepts alexa requests",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        "./node_modules/@volley/ask-sdk-local-debug/dist/LocalDebuggerInvoker.js",
+        "--accessToken",
+        "'${command:ask.accessToken}'",
+        "--skillId",
+        "${command:ask.skillIdFromWorkspace}",
+        "--remoteUrl",
+        "http://localhost:8080",
+        "--region",
+        "NA"
+      ],
+      "presentation": {
+        "reveal": "never"
+      },
+      "isBackground": true
+    },
+    {
+      "label": "Restart Interceptor",
+      "command": "${input:run-interceptor}"
+    },
+    {
+      "label": "Terminate All Tasks",
+      "command": "echo ${input:terminate}",
+      "type": "shell",
+      "problemMatcher": []
+    },
+    {
+      "type": "npm",
+      "script": "lint",
+      "problemMatcher": ["$eslint-stylish"],
+      "group": "build"
+    },
+    {
+      "type": "typescript",
+      "tsconfig": "tsconfig.json",
+      "problemMatcher": ["$tsc"],
+      "group": "build"
+    }
+  ],
+  "inputs": [
+    {
+      "id": "terminate",
+      "type": "command",
+      "command": "workbench.action.tasks.terminate",
+      "args": "terminateAll"
+    },
+    {
+      "id": "run-interceptor",
+      "type": "command",
+      "command": "workbench.action.tasks.runTask",
+      "args": "interceptor-loop"
+    }
+  ]
+}

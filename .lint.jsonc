@@ -1,0 +1,8 @@
+{
+  /**
+   * Whether or not to enable JSDoc for all classes, functions, types, and
+   * member functions. The "Man" wants to keep this from you, but I am offering
+   * it here for YOU
+   */
+  "suffer": false
+}

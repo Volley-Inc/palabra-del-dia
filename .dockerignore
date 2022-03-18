@@ -1,0 +1,7 @@
+*
+!src
+!test
+!docker
+!jest.config.js
+!*.json
+!.npmignore

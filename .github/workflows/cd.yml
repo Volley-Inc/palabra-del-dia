@@ -1,0 +1,50 @@
+name: "Continuous Delivery"
+on:
+  push:
+    branches:
+      - "dev"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel Previous Workflow Runs
+        uses: styfle/cancel-workflow-action@0.9.1
+        with:
+          all_but_latest: true
+          access_token: ${{ github.token }}
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Login to ECR
+        uses: docker/login-action@v1
+        with:
+          registry: 375633680607.dkr.ecr.us-east-1.amazonaws.com
+          username: ${{ secrets.AWS_ACCESS_KEY }}
+          password: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      - name: Get package name from package.json
+        id: packageName
+        uses: notiz-dev/github-action-json-property@release
+        with:
+          path: package.json
+          prop_path: name
+      - name: Output shaShort
+        id: sha
+        run: echo "::set-output name=short::$(git rev-parse --short HEAD)"
+      - name: Output Git branch
+        id: branch
+        run: echo "::set-output name=name::${GITHUB_REF#refs/heads/}"
+      - name: Output timestamp
+        id: ts
+        run: echo "::set-output name=ts::$(date +%Y%m%d%s)"
+      - name: Output Docker image tag
+        id: docker
+        run: echo "::set-output name=tag::${{steps.branch.outputs.name}}-${{steps.sha.outputs.short}}-${{steps.ts.outputs.ts}}"
+      - name: Build and push Docker image
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          tags: 375633680607.dkr.ecr.us-east-1.amazonaws.com/${{steps.packageName.outputs.prop}}:${{steps.docker.outputs.tag}}
+          build-args: NPM_TOKEN=${{ secrets.NPM_TOKEN }}
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

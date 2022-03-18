@@ -1,0 +1,9 @@
+node_modules
+dist
+coverage
+AutoIntent.ts
+.eslintrc.js
+
+*.js
+*.md
+**/*/autogen/*

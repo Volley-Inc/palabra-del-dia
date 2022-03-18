@@ -1,0 +1,12 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "GEV Skill",
+      "type": "node",
+      "request": "launch",
+      "preLaunchTask": "Watch & Run Interceptor",
+      "restart": true,
+    }
+  ]
+}

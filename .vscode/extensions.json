@@ -1,0 +1,34 @@
+{
+  "recommendations": [
+    /**
+     * ESLint integration.
+     */
+    "dbaeumer.vscode-eslint",
+
+    /**
+     * Display errors in-line, which speeds up refactoring and looks slick.
+     */
+    "usernamehw.errorlens",
+
+    /**
+     * Display the last git-blame information on the current line. Useful for
+     * quickly determining code ownership.
+     */
+     "usernamehw.errorlens",
+
+    /**
+     * Flowscript language support.
+     */
+     "mpoteat-vsce.flowscript-language-support",
+
+    /**
+     * Terraform syntax highlighting and some language support.
+     */
+     "hashicorp.terraform",
+
+    /**
+     * Useful extension for enabling local testing for ASK skills.
+     */
+    "ask-toolkit.alexa-skills-kit-toolkit"
+  ],
+}

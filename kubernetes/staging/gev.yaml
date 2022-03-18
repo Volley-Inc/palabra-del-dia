@@ -1,0 +1,82 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: "{{staging-helmrelease-name}}"
+  namespace: "{{staging-namespace}}"
+spec:
+  releaseName: "{{staging-helmrelease-name}}"
+  chart:
+    spec:
+      chart: gev
+      sourceRef:
+        kind: HelmRepository
+        name: volley-helm-charts
+        namespace: helm-repositories
+      version: "0.1.0"
+  interval: 1h0m0s
+  timeout: 15m
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    environment: staging
+    glb:
+      image:
+        repository: 375633680607.dkr.ecr.us-east-1.amazonaws.com/gev-load-balancer-staging
+        tag: v1.0.100
+      serviceAccount:
+        annotations:
+          # IAM Role for GLB Service Account
+          eks.amazonaws.com/role-arn: "arn:aws:iam::375633680607:role/{{project}}-staging-glb"
+      ingress:
+        # DNS for GLB endpoint (Public)
+        hostName: "{{project}}-staging.volley-services.net"
+      env: # GLB environment variables
+        STAGE: staging
+        GEV_TARGET_HOST: "http://{{project}}-staging-gev.volley-services.net"
+        SESSION_TABLE: "{{project}}-staging-glb"
+        GEV_SENTRY_KEY: ""
+        NODE_OPTIONS: "--max-old-space-size=128" # MB
+        GLB_COOKIE_NAME: "HAPINGRESS"
+      resources:
+        limits:
+          cpu: 200m
+          memory: 256Mi
+        requests:
+          cpu: 100m
+          memory: 128Mi
+    gev:
+      image:
+        repository: "375633680607.dkr.ecr.us-east-1.amazonaws.com/{{project}}"
+        tag: v0.0.1 # {"$imagepolicy": "flux-system:{{project}}-staging:tag"}
+      serviceAccount:
+        annotations:
+          # IAM Role for GEV Service Account
+          eks.amazonaws.com/role-arn: "arn:aws:iam::375633680607:role/{{project}}-staging-gev"
+      ingress:
+        # DNS for GEV endpoint (Private)
+        hostName: "{{project}}-staging-gev.volley-services.net"
+      env: # GEV environment variables
+        STAGE: staging
+        GEV_ID: "{{project}}"
+        NODE_OPTIONS: "--max-old-space-size=128" # MB
+      resources:
+        limits:
+          cpu: 200m
+          memory: 256Mi
+        requests:
+          cpu: 100m
+          memory: 128Mi
+      autoscaling:
+        enabled: true
+        minReplicas: 2
+        maxReplicas: 3
+        targetCPUUtilizationPercentage: 60
+        targetMemoryUtilizationPercentage: 60
+      lifecycle:
+        # On a new deployment, we keep old Pod around to serve
+        # existing user sessions for 600s.
+        preStopSleepSeconds: 600

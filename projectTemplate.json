@@ -1,0 +1,111 @@
+{
+  "defaultStage": "staging",
+  "googleAction": {
+    "projectId": null,
+    "manifest": {
+      "settings": {
+        "defaultLocale": "en",
+        "localizedSettings": {
+          "en": {
+            "termsOfServiceUrl": "https://volleythat.com/google-terms-of-service-privacy-policy/",
+            "privacyPolicyUrl": "https://volleythat.com/google-terms-of-service-privacy-policy/"
+          }
+        }
+      }
+    }
+  },
+  "alexaSkill": {
+    "nlu": {
+      "name": "alexa",
+      "lang": {
+        "en": ["en-US"]
+      }
+    },
+    "manifest": {
+      "publishingInformation": {
+        "locales": {
+          "en-US": {
+            "name": "{{project}}"
+          }
+        }
+      },
+      "apis": {
+        "custom": {
+          "interfaces": [
+            {
+              "type": "AUDIO_PLAYER"
+            }
+          ]
+        }
+      },
+      "permissions": [],
+      "events": {
+        "subscriptions": [
+          {
+            "eventName": "SKILL_ENABLED"
+          },
+          {
+            "eventName": "SKILL_DISABLED"
+          },
+          {
+            "eventName": "SKILL_PERMISSION_ACCEPTED"
+          },
+          {
+            "eventName": "SKILL_PERMISSION_CHANGED"
+          },
+          {
+            "eventName": "SKILL_ACCOUNT_LINKED"
+          }
+        ]
+      }
+    }
+  },
+  "stages": {
+    "staging": {
+      "googleAction": {
+        "endpoint": "https://{{project}}-staging.volley-services.net"
+      },
+      "alexaSkill": {
+        "endpoint": "https://{{project}}-staging.volley-services.net",
+        "manifest": {
+          "events": {
+            "endpoint": {
+              "uri": "https://{{project}}-staging.volley-services.net"
+            }
+          },
+          "privacyAndCompliance": {
+            "locales": {
+              "en-US": {
+                "privacyPolicyUrl": "https://volleythat.com/terms-of-service-privacy-policy",
+                "termsOfUseUrl": "https://volleythat.com/terms-of-service-privacy-policy"
+              }
+            }
+          }
+        }
+      }
+    },
+    "prod": {
+      "googleAction": {
+        "endpoint": "https://{{project}}.volley-services.net"
+      },
+      "alexaSkill": {
+        "endpoint": "https://{{project}}.volley-services.net",
+        "manifest": {
+          "events": {
+            "endpoint": {
+              "uri": "https://{{project}}.volley-services.net"
+            }
+          },
+          "privacyAndCompliance": {
+            "locales": {
+              "en-US": {
+                "privacyPolicyUrl": "https://volleythat.com/terms-of-service-privacy-policy",
+                "termsOfUseUrl": "https://volleythat.com/terms-of-service-privacy-policy"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

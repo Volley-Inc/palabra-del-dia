@@ -1,0 +1,120 @@
+{
+	"invocation": "{{project-spoken}}",
+	"intents": [
+    {
+			"name": "NameIntent",
+			"phrases": [
+				"{name}",
+				"my name is {name}",
+				"i am {name}",
+				"you can call me {name}"
+			],
+			"inputs": [
+				{
+					"name": "name",
+					"type": {
+						"alexa": "AMAZON.US_FIRST_NAME",
+            "googleAssistant": "NameType"
+					}
+				}
+			]
+		}
+  ],
+	"alexa": {
+		"interactionModel": {
+			"languageModel": {
+				"intents": [
+					{
+						"name": "AMAZON.CancelIntent",
+						"samples": []
+					},
+					{
+						"name": "AMAZON.HelpIntent",
+						"samples": []
+					},
+					{
+						"name": "AMAZON.StopIntent",
+						"samples": []
+					},
+					{
+						"name": "AMAZON.PauseIntent",
+						"samples": []
+					},
+					{
+						"name": "AMAZON.ResumeIntent",
+						"samples": []
+					},
+					{
+						"name": "AMAZON.YesIntent",
+						"samples": []
+					},
+					{
+						"name": "AMAZON.NoIntent",
+						"samples": []
+					}
+				]
+			}
+		}
+	},
+	"googleAssistant": {
+    "custom": {
+      "global": {
+        "actions.intent.MAIN": {
+          "handler": {
+            "webhookHandler": "Jovo"
+          }
+        },
+        "actions.intent.YES": {
+          "handler": {
+            "webhookHandler": "Jovo"
+          }
+        },
+        "actions.intent.NO": {
+          "handler": {
+            "webhookHandler": "Jovo"
+          }
+        },
+        "actions.intent.REPEAT": {
+          "handler": {
+            "webhookHandler": "Jovo"
+          }
+        },
+        "actions.intent.NO_MATCH_1": {
+          "handler": {
+            "webhookHandler": "Jovo"
+          }
+        },
+        "actions.intent.NO_MATCH_2": {
+          "handler": {
+            "webhookHandler": "Jovo"
+          }
+        },
+        "actions.intent.NO_MATCH_FINAL": {
+          "handler": {
+            "webhookHandler": "Jovo"
+          }
+        },
+        "actions.intent.NO_INPUT_1": {
+          "handler": {
+            "webhookHandler": "Jovo"
+          }
+        },
+        "actions.intent.NO_INPUT_2": {
+          "handler": {
+            "webhookHandler": "Jovo"
+          }
+        },
+        "actions.intent.NO_INPUT_FINAL": {
+          "handler": {
+            "webhookHandler": "Jovo"
+          }
+        }
+      },
+      "types": {
+        "NameType": {
+          "freeText": {}
+        }
+      }
+    }
+  }
+}
